@@ -1,4 +1,5 @@
 import { useForm, SubmitHandler } from "react-hook-form";
+import { useRouter } from "next/router";
 
 type FormValues = {
   customerName: string;
@@ -7,6 +8,8 @@ type FormValues = {
 };
 
 export default function ContactPage() {
+  const router = useRouter();
+
   // Step 1: Initialize react-hook-form's useForm hook
   const {
     register,
@@ -15,9 +18,26 @@ export default function ContactPage() {
   } = useForm<FormValues>();
 
   // Step 2: Function to handle form submission
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
     console.log(data);
     // Further steps: You can send this data to an API, display a message, etc.
+    try {
+      const response = await fetch("/api/formData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      if (response.ok) {
+        router.push("/contact/thank-you");
+      } else {
+        console.error("Server Error! Failed to send message.");
+        alert("Server Error! Failed to send message.");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
   };
 
   return (
@@ -38,9 +58,9 @@ export default function ContactPage() {
               {...register("customerName", { required: true })}
               className="w-full p-2 bg-gray-800 border border-gray-700 rounded"
             />
-            {errors.customerName && (
+            {errors?.customerName && (
               <span className="text-red-500">
-                This field is required, please write your Name.
+                This field is required, please write your Name properly.
               </span>
             )}
           </div>
@@ -56,7 +76,7 @@ export default function ContactPage() {
               {...register("message", { required: true })}
               className="w-full p-2 bg-gray-800 border border-gray-700 rounded"
             />
-            {errors.message && (
+            {errors?.message && (
               <span className="text-red-500">Please enter a valid message</span>
             )}
           </div>
@@ -72,7 +92,7 @@ export default function ContactPage() {
               {...register("email_id", { required: true, min: 0 })}
               className="w-full p-2 bg-gray-800 border border-gray-700 rounded"
             />
-            {errors.email_id && (
+            {errors?.email_id && (
               <span className="text-red-500">check entered Email-id</span>
             )}
           </div>
